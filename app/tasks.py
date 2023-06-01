@@ -17,19 +17,23 @@ import time
 setup()
 
 @run_in_reactor    
-def run_scrape(country_name={'country': "Thailand"}):
+def run_scrape(country_code):
     print("----------------Scraping Started---------------------")
     configure_logging()
-    process_scrape_settings(country_name)
-    settings = get_project_settings()
-    settings['FEEDS'] = {'psngames.json': {'format': 'json', 'overwrite': 'true'}}
+
+    settings = get_project_settings()   
+    settings['FEEDS'] = {f'psngames-{country_code}.json': {'format': 'json', 'overwrite': 'true'}}
     settings['ITEM_PIPELINES'] = {
         "scraper.pipelines.IDpipeline": 300
     }
-
+    custom_settings = {
+        'shortcode': country_code
+    }
+    
     runner = CrawlerRunner(settings=settings)
     # dispatcher.connect(spider_closed_action, signals.spider_closed)
-    runner.crawl(PSNScraper)
+    runner.crawl(PSNScraper, cust_settings=custom_settings)
+
 
 @run_in_reactor
 def scrape_countries():
@@ -57,7 +61,7 @@ def check_scrape_status():
     return True
 
 def process_scrape_settings(country_name):
-    json = {'country' : country_name}
+    json = {'shortcode' : country_name}
     return json
 
   

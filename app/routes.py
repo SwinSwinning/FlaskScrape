@@ -16,20 +16,29 @@ def index():
 @app.route('/upload', methods = ['POST', 'GET'])
 def upload_json_to_ftp():
     # Open the local JSON file
-    local_file_path = os.path.join(os.getcwd(), 'psngames.json')
-    with open(local_file_path, 'rb') as f:
-        # Connect to the FTP server
-        ftp = FTP('ftpupload.net')
-        ftp.login(user='b16_24575753', passwd='W8woordbyet')
-        # Change to the remote FTP directory
-        ftp.cwd('/ScrapeFiles')
-        # Get the filename from the local file and upload it to FTP server
-        filename = os.path.basename(local_file_path)
-        ftp.storbinary(f'STOR {filename}', f)
-        # Close the FTP connection
-        ftp.quit()
-        # Return a success message
-    return f'File {filename} uploaded to FTP server.'
+    results= [] 
+    country_codes = ["en-ie", "en-th", "nl-nl"]
+    # Connect to the FTP server
+    ftp = FTP('ftpupload.net')
+    ftp.login(user='b16_24575753', passwd='W8woordbyet')
+    # Change to the remote FTP directory
+    ftp.cwd('/ScrapeFiles')
+
+    for c in country_codes:
+        try:
+            local_file_path = os.path.join(os.getcwd(), f'psngames-{c}.json')
+            with open(local_file_path, 'rb') as f:
+                # Get the filename from the local file and upload it to FTP server
+                filename = os.path.basename(local_file_path)
+                ftp.storbinary(f'STOR {filename}', f)
+                # Close the FTP connection
+                
+                # Return a success message
+                results.append(f'File {filename} uploaded to FTP server.')
+        except Exception as e:
+            results.append(f"something went wrong with {c} : {e}")
+    ftp.quit()
+    return results     
 
 @app.route('/download', methods = ['GET'])
 def download_json():
@@ -50,9 +59,9 @@ def scrape():
 
 @app.route('/run_scrape')
 def startscrape():
-    country_name = request.args.get()
-    print(country_name)
-    #  run_scrape(country_name)
+    country_shortcode = next(iter(request.args.keys()))
+    print(country_shortcode)
+    run_scrape(country_shortcode)
     return "Scraping now"
    
 @app.route('/countries', methods=['GET'])

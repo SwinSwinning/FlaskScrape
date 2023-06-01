@@ -35,11 +35,11 @@ class PSNScraper(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(PSNScraper, self).__init__(*args, **kwargs)
-        self.country = self.scrape_settings["country"]
-        self.start_urls = [f'https://store.playstation.com/{self.country}/pages/browse/']   
+        self.shortcode = self.cust_settings["shortcode"]
+        self.start_urls = [f'https://store.playstation.com/{self.shortcode}/pages/browse/']   
         self.base_url = self.start_urls[0]
 
-        print(self.base_url, self.country, self.start_urls)
+        
     # link_extractor = LinkExtractor(restrict_css='a.psw-link.psw-content-link')
     link_extractor = LinkExtractor(restrict_xpaths='//a[@class="psw-link psw-content-link"]')
 
@@ -49,7 +49,7 @@ class PSNScraper(scrapy.Spider):
         next_page_number = response.css(next_page_selector).get()
         next_page_path = urljoin(self.base_url, next_page_number)
 
-        if int(next_page_number) < 2: # Uncomment to scrape all
+        if int(next_page_number) < 4: # Uncomment to scrape all
             yield scrapy.Request(next_page_path)
        
         for item_link in self.link_extractor.extract_links(response):
@@ -97,8 +97,8 @@ class GeneralScraper(scrapy.Spider):
 
 
     def start_requests(self):
-        # for k,v in self.scrape_settings.items():
-        #     print(f'----- {k} ----- {v}-----')
+        for k,v in self.scrape_settings.items():
+            print(f'----- {k} ----- {v}-----')
 
         yield scrapy.Request(f'{self.start_url}')
 

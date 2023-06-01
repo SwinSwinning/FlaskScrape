@@ -30,7 +30,7 @@
                 $(function() {
                   $('a#test').on('click', function(e) {
                     e.preventDefault();
-                    var country = $('#sform option:selected').text();        
+                    var country = $('#sform option:selected').val();        
                     $.getJSON('/run_scrape', 
                     country,                    
                         function(data) {
