@@ -1,0 +1,29 @@
+
+<div class="text-center">
+    <h1>Scrape API FLASK</h1>
+</div>
+
+<div class="container px-4 mt-5">
+    <div class="row gx-5">
+      <div class="col">
+        <button type="button" class="btn btn-primary">Data</button>
+      </div>
+      <div class="col">
+        <button type="button" class="btn btn-primary">Download</button>
+      </div>
+      <div class="col">
+        <button type="button" class="btn btn-dark">Home</button>
+      </div>
+      <div class="col">
+        <a type="button" class="btn btn-secondary" href="{{ url_for('scrape') }}">Scrape</a>
+      </div>
+      <div class="col">
+        <a type="button" class="btn btn-secondary" href="{{ url_for('upload_json_to_ftp') }}">Upload</a>
+      </div>
+      <div class="col">
+        <a type="button" class="btn btn-secondary" href="{{ url_for('get_countries') }}">Countries</a>
+      </div>
+
+
+    </div>
+  </div>
