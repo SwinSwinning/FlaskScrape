@@ -104,6 +104,7 @@ class GeneralScraper(scrapy.Spider):
 
 
     def parse(self, response):
+        # print(response.css('button[id="menu-button-primary--msg-games"]').getall())
         # This part handles the pagination and crawling through all the pages:
         if self.multiple_pages:
             print("multiple pages-------------------------------------------------------------------------")
@@ -130,17 +131,20 @@ class GeneralScraper(scrapy.Spider):
 
         else:  # If data to scrape is found on the same page...
             print("No throughlinking -------------------------------------------------------------------------")
-            
+            print(response.xpath('//button[@data-qa="mfe-footer#storePicker"]').get()) # Link needs to be clicked using helium
             # rows = response.css(self.item_selector)
-            rows = response.css('a[data-qa*="storePickerItem"]')   
-            print(response, len(rows))
-            if len(rows) > 0:   # 0 results picked up as the page needs to load JS before the items to scrape become available.                
-                for row in rows:
-                    print(row)
-                    item = {}
-                    for k, v in self.attrs_to_scrape.items():
-                        item[k] = response.css(row, v).strip()
-                    yield item
+            # button1 = response.css(selector).get()
+            # button2 = response.css('button[data-qa="mfe-footer#storePicker"]')
+
+            # print(button2, len(button2))
+
+            # if len(rows) > 0:   # 0 results picked up as the page needs to load JS before the items to scrape become available.                
+            #     for row in rows:
+            #         print(row)
+            #         item = {}
+            #         for k, v in self.attrs_to_scrape.items():
+            #             item[k] = response.css(row, v).strip()
+            #         yield item
 
 
     def parse_page2(self, response, item):

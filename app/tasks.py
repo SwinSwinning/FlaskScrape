@@ -40,6 +40,7 @@ def scrape_countries():
     print("----------------Scraping countries Started---------------------")
     configure_logging()
     settings = get_project_settings()
+    settings['USER_AGENT'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     settings['FEEDS'] = {'countries.json': {'format': 'json', 'overwrite': 'true'}}
     data = {          'start_url': 'https://store.playstation.com/en-gb/pages/browse',
                      'item_links' : False,
