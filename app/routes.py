@@ -1,6 +1,6 @@
 import json
 from app import app
-from app.tasks import run_scrape, scrape_countries
+from app.tasks import run_scrape, run_countries_scrape, get_country_list
 from ftplib import FTP
 
 import os
@@ -15,24 +15,39 @@ def index():
 
 @app.route('/upload', methods = ['POST', 'GET'])
 def upload_json_to_ftp():
-    # Open the local JSON file
+
     results= [] 
-    country_codes = ["en-ie", "en-th", "nl-nl"]
+    # Load the countries.json file to get all the country codes. 
+    with open('.\\datafolder\\countries.json') as json_file:
+        country_data = json.load(json_file)
+    country_codes = [item["code"] for item in country_data]
+
     # Connect to the FTP server
     ftp = FTP('ftpupload.net')
     ftp.login(user='b16_24575753', passwd='W8woordbyet')
     # Change to the remote FTP directory
     ftp.cwd('/ScrapeFiles')
 
+    # upload the countries.json file.
+    try:
+        local_file_path = os.path.join(os.getcwd(), f'.\\datafolder\\countries.json')
+        with open(local_file_path, 'rb') as f:
+            # Get the filename from the local file and upload it to FTP server
+            filename = os.path.basename(local_file_path)
+            ftp.storbinary(f'STOR {filename}', f)                     
+            # Return a success message
+            results.append(f'File {filename} uploaded to FTP server.')
+    except Exception as e:
+        results.append(f'error uploading countries.json : {e}')
+        
+    # Upload the individual gamelists per country.
     for c in country_codes:
         try:
-            local_file_path = os.path.join(os.getcwd(), f'psngames-{c}.json')
+            local_file_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{c}.json')
             with open(local_file_path, 'rb') as f:
                 # Get the filename from the local file and upload it to FTP server
                 filename = os.path.basename(local_file_path)
-                ftp.storbinary(f'STOR {filename}', f)
-                # Close the FTP connection
-                
+                ftp.storbinary(f'STOR {filename}', f)        
                 # Return a success message
                 results.append(f'File {filename} uploaded to FTP server.')
         except Exception as e:
@@ -55,16 +70,19 @@ def get_data():
 
 @app.route('/scrape', methods = ['POST', 'GET'])
 def scrape():
-    return render_template('scrape.html')
+    country_data = get_country_list()    
+    print(get_country_list())         
+    return render_template('scrape.html', country_options=country_data)
+   
 
 @app.route('/run_scrape')
 def startscrape():
-    country_shortcode = next(iter(request.args.keys()))
-    print(country_shortcode)
+    country_shortcode = next(iter(request.args))
+
     run_scrape(country_shortcode)
     return "Scraping now"
    
 @app.route('/countries', methods=['GET'])
-def get_countries():
-    scrape_countries()
+def scrape_countries():
+    run_countries_scrape()
     return "getting countries"

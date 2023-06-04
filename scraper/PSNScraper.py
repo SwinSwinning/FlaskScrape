@@ -5,6 +5,7 @@ from scrapy import signals
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from urllib.parse import urlsplit, urlunsplit, urljoin
+import json
 
 def get_base_url(url, urltype='std'):
     split_url = urlsplit(url)
@@ -35,21 +36,22 @@ class PSNScraper(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(PSNScraper, self).__init__(*args, **kwargs)
-        self.shortcode = self.cust_settings["shortcode"]
-        self.start_urls = [f'https://store.playstation.com/{self.shortcode}/pages/browse/']   
-        self.base_url = self.start_urls[0]
+        self.shortcode = self.scrape_settings["shortcode"]
+        print(self.shortcode)
+        self.start_urls = [f'https://store.playstation.com/{self.shortcode}/pages/browse/']
+        self.base_url = get_base_url(self.start_urls[0])
 
-        
+
     # link_extractor = LinkExtractor(restrict_css='a.psw-link.psw-content-link')
     link_extractor = LinkExtractor(restrict_xpaths='//a[@class="psw-link psw-content-link"]')
-
+    
 
     def parse(self, response):
         next_page_selector = 'button[data-qa="ems-sdk-grid#ems-sdk-top-paginator-root#next"]::attr(value)'
         next_page_number = response.css(next_page_selector).get()
         next_page_path = urljoin(self.base_url, next_page_number)
 
-        if int(next_page_number) < 4: # Uncomment to scrape all
+        if int(next_page_number) < 2: # Uncomment to scrape all
             yield scrapy.Request(next_page_path)
        
         for item_link in self.link_extractor.extract_links(response):
@@ -75,17 +77,18 @@ class PSNScraper(scrapy.Spider):
         yield item
 
 
-class GeneralScraper(scrapy.Spider):
-    name = 'generalspider'
+class PSNCountryScraper(scrapy.Spider):
+    name = 'psncountryspider'
 
     def __init__(self, *args, **kwargs):
-        super(GeneralScraper, self).__init__(*args, **kwargs)
+        super(PSNCountryScraper, self).__init__(*args, **kwargs)
         self.start_url = self.scrape_settings["start_url"]
         self.base_url = get_base_url(self.start_url)
         # self.link_type = self.scrape_settings["link_type"]
         self.item_selector = self.scrape_settings['item_css']
         self.contain_item_links = self.scrape_settings['item_links']
         self.multiple_pages = self.scrape_settings['multiple_pages']
+        self.scrape_json = self.scrape_settings['scrape_json']
 
         # These were used by the old parse method.
         # self.current_page_selector = self.scrape_settings['current_page_css']
@@ -97,8 +100,8 @@ class GeneralScraper(scrapy.Spider):
 
 
     def start_requests(self):
-        for k,v in self.scrape_settings.items():
-            print(f'----- {k} ----- {v}-----')
+        # for k,v in self.scrape_settings.items():
+        #     print(f'----- {k} ----- {v}-----')
 
         yield scrapy.Request(f'{self.start_url}')
 
@@ -128,23 +131,59 @@ class GeneralScraper(scrapy.Spider):
                                   callback=self.parse_page2,
                                   cb_kwargs={ 'item': item })
                 yield request
+        
+        # If the data to scrape is found in JSON / Dict format on the page
+        elif self.scrape_json:
+            print("Scrape JSON data -------------------------------------------------------------------------")
+
+            res = response.xpath(self.item_selector).get()
+            text_to_find = '"translations":'
+            start = res.find(text_to_find)+len(text_to_find)
+            end = res[1:].find('<')
+            countryJson  = res[start:end]
+
+            json_data = json.loads(countryJson)
+    
+            country_codes =[]
+            id_codes = []
+
+            find_countr = "msgid_country_"
+            find_countr_code = "msgid_language_"
+            
+            # Go through each object in the json file and check the country and country language codes.
+            for k,v in json_data.items():
+                if k.startswith(find_countr) and len(k) == len(find_countr)+2:
+                    country_dict= {}
+                 
+                    country_dict["country"] = v 
+                    country_dict['code'] = k[k.rfind('_')+1:]
+                    country_codes.append(country_dict)
+           
+                elif k.startswith(find_countr_code) and len(k) == 20:
+                    id_codes.append(k[k.find('e_')+2:])
+                           
+            for c in country_codes:
+                for y in id_codes:
+                    if y[y.rfind("_")+1:] == c["code"]:
+                        c["code"] = y.replace('_', '-')
+
+            if len(country_codes) > 0:             
+                for country in country_codes:
+                    item = country
+                    yield item
 
         else:  # If data to scrape is found on the same page...
             print("No throughlinking -------------------------------------------------------------------------")
-            print(response.xpath('//button[@data-qa="mfe-footer#storePicker"]').get()) # Link needs to be clicked using helium
-            # rows = response.css(self.item_selector)
-            # button1 = response.css(selector).get()
-            # button2 = response.css('button[data-qa="mfe-footer#storePicker"]')
+            
+            rows = response.css(self.item_selector)    
 
-            # print(button2, len(button2))
-
-            # if len(rows) > 0:   # 0 results picked up as the page needs to load JS before the items to scrape become available.                
-            #     for row in rows:
-            #         print(row)
-            #         item = {}
-            #         for k, v in self.attrs_to_scrape.items():
-            #             item[k] = response.css(row, v).strip()
-            #         yield item
+            if len(rows) > 0:             
+                for row in rows:
+                    print(row)
+                    item = {}
+                    for k, v in self.attrs_to_scrape.items():
+                        item[k] = response.css(row, v).strip()
+                    yield item
 
 
     def parse_page2(self, response, item):

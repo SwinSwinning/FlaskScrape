@@ -5,11 +5,17 @@
 <div container class="mt-5">
     <div class="row">
         <div class="col">
-            <select class="form-select" id="sform" aria-label="Default select example">
-                
-                <option selected value="en-ie">Ireland</option>
+            <select class="form-select" id="sform" aria-label="Default select example">              
+
+                      {% for option in country_options %}
+                      
+                      <option value='{{ option["code"] }}'>{{ option["country"] }}</option>
+                    
+                      {% endfor %}                 
+
+                <!-- <option selected value="en-ie">Ireland</option>
                 <option value="en-th">Thailand</option>
-                <option value="nl-nl">Netherlands</option>
+                <option value="nl-nl">Netherlands</option> -->
             </select>
         </div>
         <div class="col">
@@ -17,6 +23,7 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 
