@@ -6,13 +6,13 @@
 <div class="container px-4 mt-5">
     <div class="row gx-5">
       <div class="col">
-        <button type="button" class="btn btn-primary">Data</button>
+        <button type="button" class="btn btn-primary" href="{{ url_for('get_data') }}">Data</button>
       </div>
       <div class="col">
         <button type="button" class="btn btn-primary">Download</button>
       </div>
       <div class="col">
-        <button type="button" class="btn btn-dark">Home</button>
+        <button type="button" class="btn btn-dark"  href="{{ url_for('index') }}">Home</button>
       </div>
       <div class="col">
         <a type="button" class="btn btn-secondary" href="{{ url_for('scrape') }}">Scrape</a>

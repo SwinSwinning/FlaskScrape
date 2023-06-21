@@ -1,4 +1,4 @@
-from pathlib import Path
+# from ScraperHelper import xpath_or_css
 
 import scrapy
 from scrapy import signals
@@ -7,29 +7,8 @@ from scrapy.linkextractors import LinkExtractor
 from urllib.parse import urlsplit, urlunsplit, urljoin
 import json
 
-def get_base_url(url, urltype='std'):
-    split_url = urlsplit(url)
-    if urltype == 'std':
-        return urlunsplit((split_url[0],split_url[1],split_url[2].replace('1', '{}'), '',''))
-    return urlunsplit((split_url[0], split_url[1], '', '', ''))
+from scraper.ScraperHelper import xpath_or_css, get_base_url
 
-def xpath_or_css(response, selector, add='text'):
-    attr_name_to_scrape = add
-    if selector.startswith('./'):
-        selector = selector[1:]
-    if selector.startswith('/'):
-        if attr_name_to_scrape == 'text':
-            selector += '/text()[normalize-space()]'
-        else:
-            selector += f'/@{attr_name_to_scrape}'
-
-        # Add a '.' in front of the xpath selector, otherwise the iteration will only return the first iter
-        return response.xpath(f'.{selector}').get()
-    else:
-        selector += f'::{attr_name_to_scrape}'
-        # selector += f'::attr{attr_name_to_scrape}'
-
-        return response.css(selector).get()
 
 class PSNScraper(scrapy.Spider):
     name = 'PSNscraperspider'
@@ -89,25 +68,14 @@ class PSNCountryScraper(scrapy.Spider):
         self.contain_item_links = self.scrape_settings['item_links']
         self.multiple_pages = self.scrape_settings['multiple_pages']
         self.scrape_json = self.scrape_settings['scrape_json']
-
-        # These were used by the old parse method.
-        # self.current_page_selector = self.scrape_settings['current_page_css']
-        # self.current_page_selector_add = self.scrape_settings['current_page_add']
-        # self.total_pages_selector = self.scrape_settings['total_pages_css']
-        # self.total_pages_selector_add = self.scrape_settings['total_pages_add'] or None
-
         self.attrs_to_scrape = self.scrape_settings['attributes_dict']
 
 
     def start_requests(self):
-        # for k,v in self.scrape_settings.items():
-        #     print(f'----- {k} ----- {v}-----')
-
-        yield scrapy.Request(f'{self.start_url}')
+         yield scrapy.Request(f'{self.start_url}')
 
 
     def parse(self, response):
-        # print(response.css('button[id="menu-button-primary--msg-games"]').getall())
         # This part handles the pagination and crawling through all the pages:
         if self.multiple_pages:
             print("multiple pages-------------------------------------------------------------------------")
@@ -201,4 +169,74 @@ class PSNCountryScraper(scrapy.Spider):
                 item[k] = xpath_or_css(response, v).strip()
         item['link'] = response.url
 
+        yield item
+
+    
+class GeneralScraper(scrapy.Spider):
+    name = 'generalscraperspider'
+
+    def __init__(self, *args, **kwargs):
+        super(GeneralScraper, self).__init__(*args, **kwargs)
+        self.start_url = self.scrape_settings["start_url"]
+        self.base_url = get_base_url(self.start_url)
+        # self.link_type = self.scrape_settings["link_type"]
+        self.item_selector = self.scrape_settings['item_css']
+        self.contain_item_links = self.scrape_settings['item_links']
+        self.multiple_pages = self.scrape_settings['multiple_pages']
+        self.scrape_json = self.scrape_settings['scrape_json']
+        self.attrs_to_scrape = self.scrape_settings['attributes_dict']
+        self.pages_scraped = 0
+
+
+    def start_requests(self):
+         yield scrapy.Request(f'{self.start_url}')
+
+
+    def parse(self, response):        
+        # This part handles the pagination and crawling through all the pages:
+        if self.multiple_pages:
+            if self.pages_scraped < 2:
+                print("multiple pages-------------------------------------------------------------------------")
+                # selector = self.scrape_settings["next_page_url"]
+                # selector += f'::attr({self.scrape_settings["next_page_url_add"]})'
+                path = xpath_or_css(response, self.scrape_settings["next_page_url"], self.scrape_settings["next_page_url_add"] ).get()
+            
+                combined = urljoin(self.base_url, path)
+                self.pages_scraped = self.pages_scraped+1 
+                yield scrapy.Request(combined)
+
+        # This part handles the crawling of the individual items and if needed extract data from itempages.
+        if self.contain_item_links:
+            print("Item Links-------------------------------------------------------------------------")
+            # if site has item links that need to be accessed, create LinkExtractor Object to help extract item links.
+            # ...determine whether the item selector is xpath or css.
+            link_extractor =  LinkExtractor(restrict_css=self.item_selector)
+
+            for item_link in link_extractor.extract_links(response):  #..create requests for each item link found on page.
+                item = {}
+                request = Request(item_link.url,
+                                  callback=self.parse_page2,
+                                  cb_kwargs={ 'item': item })
+                yield request
+        
+        else:  # If data to scrape is found on the same page...
+            print("No throughlinking -------------------------------------------------------------------------")
+            
+            rows = xpath_or_css(response, self.item_selector)  
+            rows1 = response.xpath(self.item_selector)
+
+            if len(rows) > 0:             
+                for row in rows:
+                    print(row)
+                    item = {}
+                    for k, v in self.attrs_to_scrape.items():
+                        print(k, v)                   
+                        item[k] = xpath_or_css(row, v, "text").get().strip()
+                    yield item
+
+
+    def parse_page2(self, response, item):
+        for k,v in self.attrs_to_scrape.items():
+            item[k] = xpath_or_css(response, v).strip()
+        item['link'] = response.url
         yield item

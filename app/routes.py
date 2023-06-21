@@ -1,7 +1,8 @@
 import json
 from app import app
-from app.tasks import run_scrape, run_countries_scrape, get_country_list
+from app.tasks import run_scrape, run_countries_scrape, get_country_list, run_scrape_new
 from ftplib import FTP
+import creds
 
 import os
 
@@ -23,8 +24,8 @@ def upload_json_to_ftp():
     country_codes = [item["code"] for item in country_data]
 
     # Connect to the FTP server
-    ftp = FTP('ftpupload.net')
-    ftp.login(user='b16_24575753', passwd='W8woordbyet')
+    ftp = FTP(creds.ftp_host)  
+    ftp.login(user=creds.ftp_username, passwd=creds.ftp_password) 
     # Change to the remote FTP directory
     ftp.cwd('/ScrapeFiles')
 
@@ -57,12 +58,12 @@ def upload_json_to_ftp():
 
 @app.route('/download', methods = ['GET'])
 def download_json():
-    file_path = os.path.join(os.getcwd(), 'psngames.json')
+    file_path = os.path.join(os.getcwd(), 'psngames-en-ie.json')
     return send_file(file_path, as_attachment=True)
 
 @app.route('/data', methods=['GET'])
 def get_data():
-    json_path = os.path.join(os.getcwd(), 'psngames.json')
+    json_path = os.path.join(os.getcwd(), '.\\datafolder\\psngames-en-ie.json')
     with open(json_path, 'r') as json_file:
         data = json.load(json_file)
     return jsonify(data)
@@ -86,3 +87,8 @@ def startscrape():
 def scrape_countries():
     run_countries_scrape()
     return "getting countries"
+
+@app.route('/gen')
+def start_gen_scrape():
+    run_scrape_new()
+    return "Scraping general now"
