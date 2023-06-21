@@ -31,7 +31,7 @@
 <h3 align="center">Flask Scrape</h3>
 
   <p align="center">
-    project_description
+
     <br />
     <a href="https://github.com/swinswinning/flaskscrape"><strong>Explore the docs »</strong></a>
     <br />
