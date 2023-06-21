@@ -25,10 +25,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/swinswinning/flaskscrape">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Flask Scrape</h3>
 
   <p align="center">
     project_description
@@ -49,7 +49,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 
 A simple Flask web application built to scrape PlayStation games available on the online store. The web app utilizes the Flask framework and the Scrapy library for efficient scraping.
 
@@ -92,9 +91,7 @@ Scrapy
   $ pip install -r requirements.txt
   ```
 3. Setup Config File `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
