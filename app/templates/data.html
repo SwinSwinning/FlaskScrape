@@ -8,8 +8,10 @@
         <p>Choose Playstation Store Country JSON Data to Display</p>
     </div>
     <div class="row">
+        
         <div class="col-6">
-            <select class="form-select" id="displayform" aria-label="Default select example">              
+            <form action="/json" method="POST"></form>
+            <select name="display_selected" class="form-select" id="displayform" aria-label="Default select example">              
 
                       {% for option in country_options %}
                       
@@ -18,9 +20,11 @@
                       {% endfor %}                 
             </select>
         </div>
-        <div class="col-6">
-            <a href="#" id=JSONDisplay><button type="button" class="btn btn-primary" >Display Data</button></a> 
-        </div>
+            <div class="col-6">
+                <a href="#" id=JSONDisplay><button type="submit" class="btn btn-primary" >Display Data</button></a> 
+            </div>
+            </form>
+        
     </div>
 </div>
 <div class="mt-5">
@@ -39,12 +43,12 @@
                   
                     {% endfor %}                 
                 </select>
-                </div>
+            </div>
                 <div class="col-6">
                     <a href="#" id=JSONDownload><button type="submit" class="btn btn-primary" >Download</button></a> 
                 </div>
             </form>
-
+        
     </div>
 </div>
 <div class="mt-5">

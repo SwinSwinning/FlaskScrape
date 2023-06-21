@@ -58,15 +58,15 @@ def upload_json_to_ftp():
 
 @app.route('/download', methods = ['POST', 'GET'])
 def download_json():
-    #  country_shortcode = next(iter(request.args))
+
     country_shortcode = request.form.get('selected_value')
     file_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{country_shortcode}.json')
     return send_file(file_path, as_attachment=True)
 
 @app.route('/json', methods = ['POST', 'GET'])
 def get_json_data():
-    country_shortcode = next(iter(request.args))
-    json_path = os.path.join(os.getcwd(), '.\\datafolder\\psngames-en-ie.json')
+    country_shortcode = request.form.get('display_selected')
+    json_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{country_shortcode}.json')
     with open(json_path, 'r') as json_file:
         data = json.load(json_file)
     return jsonify(data)
