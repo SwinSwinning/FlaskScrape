@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="mt-5">
+    <div class="row">
+        <h4>Display Data</h4>
+        <p>Choose Playstation Store Country JSON Data to Display</p>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <select class="form-select" id="displayform" aria-label="Default select example">              
+
+                      {% for option in country_options %}
+                      
+                      <option value='{{ option["code"] }}'>{{ option["country"] }}</option>
+                    
+                      {% endfor %}                 
+            </select>
+        </div>
+        <div class="col-6">
+            <a href="#" id=JSONDisplay><button type="button" class="btn btn-primary" >Display Data</button></a> 
+        </div>
+    </div>
+</div>
+<div class="mt-5">
+    <div class="row">
+        <h4>Download Data</h4>
+        <p>Choose Playstation Store Country JSON Data to Display</p>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <form action="/download" method="POST">
+                <select name="selected_value" class="form-select" id="downloadform" aria-label="Default select example">              
+
+                    {% for option in country_options %}
+                    
+                    <option value='{{ option["code"] }}'>{{ option["country"] }}</option>
+                  
+                    {% endfor %}                 
+                </select>
+                </div>
+                <div class="col-6">
+                    <a href="#" id=JSONDownload><button type="submit" class="btn btn-primary" >Download</button></a> 
+                </div>
+            </form>
+
+    </div>
+</div>
+<div class="mt-5">
+    <div class="row">
+        <h4>FTP upload</h4>
+    </div>
+    <div class="row">
+        <div class="col-6">
+         
+            <p>Upload Json to FTP</p>
+        </div>
+        <div class="col-6">
+            <a href="{{ url_for('upload_json_to_ftp') }}" id=upload><button type="button" class="btn btn-primary" >Upload</button></a> 
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

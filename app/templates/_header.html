@@ -1,29 +1,25 @@
-
-<div class="text-center">
-    <h1>Scrape API FLASK</h1>
-</div>
-
-<div class="container px-4 mt-5">
-    <div class="row gx-5">
-      <div class="col">
-        <button type="button" class="btn btn-primary" href="{{ url_for('get_data') }}">Data</button>
-      </div>
-      <div class="col">
-        <button type="button" class="btn btn-primary">Download</button>
-      </div>
-      <div class="col">
-        <button type="button" class="btn btn-dark"  href="{{ url_for('index') }}">Home</button>
-      </div>
-      <div class="col">
-        <a type="button" class="btn btn-secondary" href="{{ url_for('scrape') }}">Scrape</a>
-      </div>
-      <div class="col">
-        <a type="button" class="btn btn-secondary" href="{{ url_for('upload_json_to_ftp') }}">Upload</a>
-      </div>
-      <div class="col">
-        <a type="button" class="btn btn-secondary" href="{{ url_for('scrape_countries') }}">Countries</a>
-      </div>
-
-
-    </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">FlaskScrape</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('scrape') }}">Scrape</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('data') }}">Data</a>
+      </li>
+    </ul>
   </div>
+</nav>
+
+
+
+
+
+

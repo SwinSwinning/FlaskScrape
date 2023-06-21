@@ -15,7 +15,7 @@
         {% endblock %}
     </head>
     <body>
-        <div class="mt-3" >
+        <div class="container-fluid" >
             {% include '_header.html' %}
 
             <!-- Your page content -->
@@ -28,7 +28,7 @@
             <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
             <script type=text/javascript>
                 $(function() {
-                  $('a#test').on('click', function(e) {
+                  $('a#scrapeGameData').on('click', function(e) {
                     e.preventDefault();
                     var country = $('#sform option:selected').val();        
                     $.getJSON('/run_scrape', 
@@ -39,7 +39,36 @@
                     return false;
                   });
                 });
-        </script>
+
+                // $(function() {
+                //   $('a#JSONDisplay').on('click', function(e) {
+                //     e.preventDefault();
+                //     var country = $('#sform option:selected').val();        
+                //     $.getJSON('/json', 
+                //     country,                    
+                //         function(data) {
+                //       //do nothing
+                //     });
+                //     return false;
+                //   });
+                // });
+            </script>
+
+<!-- <script type=text/javascript>
+    $(function() {
+      $('a#JSONDownload').on('click', function(e) {
+        e.preventDefault();
+        var country = $('#downloadform option:selected').val();        
+        $.getJSON('/download', 
+        country,                    
+            function(data) {
+          //do nothing
+        });
+        return false;
+      });
+    });
+
+</script> -->
         {% endblock %}
     </body>
 </html>

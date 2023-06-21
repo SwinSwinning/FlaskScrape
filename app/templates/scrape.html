@@ -2,9 +2,13 @@
 
 
 {% block content %}
-<div container class="mt-5">
+<div class="mt-5">
     <div class="row">
-        <div class="col">
+        <h4>Game Data</h4>
+        <p>Choose Playstation Store Country to Scrape below:</p>
+    </div>
+    <div class="row">
+        <div class="col-6">
             <select class="form-select" id="sform" aria-label="Default select example">              
 
                       {% for option in country_options %}
@@ -12,14 +16,24 @@
                       <option value='{{ option["code"] }}'>{{ option["country"] }}</option>
                     
                       {% endfor %}                 
-
-                <!-- <option selected value="en-ie">Ireland</option>
-                <option value="en-th">Thailand</option>
-                <option value="nl-nl">Netherlands</option> -->
             </select>
         </div>
-        <div class="col">
-            <a href=# id=test><button type="button" class="btn btn-primary" >Start Scraping</button></a> 
+        <div class="col-6">
+            <a href="#" id=scrapeGameData><button type="button" class="btn btn-primary" >Scrape Game Data</button></a> 
+        </div>
+    </div>
+</div>
+<div class="mt-5">
+    <div class="row">
+        <h4>Countries</h4>
+    </div>
+    <div class="row">
+        <div class="col-6">
+         
+            <p>Scrape the countries for which there are PSN stores</p>
+        </div>
+        <div class="col-6">
+            <a href="{{ url_for('scrape_countries') }}" id=scrapeCountries><button type="button" class="btn btn-primary" >Scrape Countries</button></a> 
         </div>
     </div>
 </div>

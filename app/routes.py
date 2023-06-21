@@ -56,13 +56,16 @@ def upload_json_to_ftp():
     ftp.quit()
     return results     
 
-@app.route('/download', methods = ['GET'])
+@app.route('/download', methods = ['POST', 'GET'])
 def download_json():
-    file_path = os.path.join(os.getcwd(), 'psngames-en-ie.json')
+    #  country_shortcode = next(iter(request.args))
+    country_shortcode = request.form.get('selected_value')
+    file_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{country_shortcode}.json')
     return send_file(file_path, as_attachment=True)
 
-@app.route('/data', methods=['GET'])
-def get_data():
+@app.route('/json', methods = ['POST', 'GET'])
+def get_json_data():
+    country_shortcode = next(iter(request.args))
     json_path = os.path.join(os.getcwd(), '.\\datafolder\\psngames-en-ie.json')
     with open(json_path, 'r') as json_file:
         data = json.load(json_file)
@@ -71,9 +74,13 @@ def get_data():
 
 @app.route('/scrape', methods = ['POST', 'GET'])
 def scrape():
-    country_data = get_country_list()    
-    print(get_country_list())         
+    country_data = get_country_list()           
     return render_template('scrape.html', country_options=country_data)
+
+@app.route('/data', methods = ['POST', 'GET'])
+def data():
+    country_data = get_country_list()           
+    return render_template('data.html', country_options=country_data)         
    
 
 @app.route('/run_scrape')
@@ -86,7 +93,7 @@ def startscrape():
 @app.route('/countries', methods=['GET'])
 def scrape_countries():
     run_countries_scrape()
-    return "getting countries"
+    return render_template('countries.html')
 
 @app.route('/gen')
 def start_gen_scrape():
