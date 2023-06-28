@@ -90,7 +90,12 @@ Scrapy
   ```sh
   $ pip install -r requirements.txt
   ```
-3. Setup Config File `config.js`
+3. Create a creds.py file in the project root and enter your FTP credentials:
+   ```sh
+    ftp_host = Your FTP Hostname/url
+    ftp_username = your FTP username
+    ftp_password = Your FTP password
+    ```
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
