@@ -15,8 +15,20 @@
         {% endblock %}
     </head>
     <body>
-        <div class="container-fluid" >
+        <div class="container" >
             {% include '_header.html' %}
+
+            <br>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+    
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
+    
+            {% endif %}
+            {% endwith %}
 
             <!-- Your page content -->
             {% block content %}{% endblock %}
@@ -25,23 +37,15 @@
         {% block scripts %}
             <!-- Optional JavaScript -->
             {{ bootstrap.load_js() }}
-            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-            <script type=text/javascript>
-                $(function() {
-                  $('a#scrapeGameData').on('click', function(e) {
-                    e.preventDefault();
-                    var country = $('#sform option:selected').val();        
-                    $.getJSON('/run_scrape', 
-                    country,                    
-                        function(data) {
-                      //do nothing
-                    });
-                    return false;
-                  });
+                    
+
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <script>        
+             $(document).ready(function() {
+                $('.dropdown-toggle').dropdown();
                 });
             </script>
-
-
-        {% endblock %}
+        {% endblock %}       
     </body>
 </html>

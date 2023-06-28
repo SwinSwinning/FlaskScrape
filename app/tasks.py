@@ -42,9 +42,28 @@ def run_scrape(country_code):
     runner = CrawlerRunner(settings=settings)
     # dispatcher.connect(spider_closed_action, signals.spider_closed)
     runner.crawl(PSNScraper, scrape_settings=data)
-    
+
+
 @run_in_reactor    
-def run_scrape_new():
+def run_scrape_new(scr_settings):
+    print("----------------Scraping Started---------------------")
+    configure_logging()
+
+    settings = get_project_settings()   
+
+    settings['USER_AGENT'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    settings['FEEDS'] = {f'.\\datafolder\\generalScrape.json': {'format': 'json', 'overwrite': 'true'}}
+    settings['ITEM_PIPELINES'] = {
+       
+    }
+    
+    runner = CrawlerRunner(settings=settings)
+    # dispatcher.connect(spider_closed_action, signals.spider_closed)
+    runner.crawl(GeneralScraper, scrape_settings=scr_settings)
+
+
+@run_in_reactor    
+def testscrape():
     print("----------------Scraping Started---------------------")
     configure_logging()
 

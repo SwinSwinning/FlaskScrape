@@ -1,5 +1,3 @@
-# from ScraperHelper import xpath_or_css
-
 import scrapy
 from scrapy import signals
 from scrapy.http import Request
@@ -7,7 +5,7 @@ from scrapy.linkextractors import LinkExtractor
 from urllib.parse import urlsplit, urlunsplit, urljoin
 import json
 
-from scraper.ScraperHelper import xpath_or_css, get_base_url
+from scraper.ScraperHelper import xpath_or_css, get_base_url, is_xpath
 
 
 class PSNScraper(scrapy.Spider):
@@ -184,7 +182,7 @@ class GeneralScraper(scrapy.Spider):
         self.contain_item_links = self.scrape_settings['item_links']
         self.multiple_pages = self.scrape_settings['multiple_pages']
         self.scrape_json = self.scrape_settings['scrape_json']
-        self.attrs_to_scrape = self.scrape_settings['attributes_dict']
+        self.attrs_to_scrape = self.scrape_settings['attributes']
         self.pages_scraped = 0
 
 
@@ -199,7 +197,9 @@ class GeneralScraper(scrapy.Spider):
                 print("multiple pages-------------------------------------------------------------------------")
                 # selector = self.scrape_settings["next_page_url"]
                 # selector += f'::attr({self.scrape_settings["next_page_url_add"]})'
-                path = xpath_or_css(response, self.scrape_settings["next_page_url"], self.scrape_settings["next_page_url_add"] ).get()
+                path = xpath_or_css(response, 
+                                    self.scrape_settings["next_page_url"], 
+                                    self.scrape_settings["next_page_url_add"] ).get()
             
                 combined = urljoin(self.base_url, path)
                 self.pages_scraped = self.pages_scraped+1 
@@ -210,7 +210,10 @@ class GeneralScraper(scrapy.Spider):
             print("Item Links-------------------------------------------------------------------------")
             # if site has item links that need to be accessed, create LinkExtractor Object to help extract item links.
             # ...determine whether the item selector is xpath or css.
-            link_extractor =  LinkExtractor(restrict_css=self.item_selector)
+            if is_xpath(self.item_selector):
+                link_extractor =  LinkExtractor(restrict_xpaths=self.item_selector)
+            else:
+                link_extractor =  LinkExtractor(restrict_css=self.item_selector)
 
             for item_link in link_extractor.extract_links(response):  #..create requests for each item link found on page.
                 item = {}
@@ -237,6 +240,6 @@ class GeneralScraper(scrapy.Spider):
 
     def parse_page2(self, response, item):
         for k,v in self.attrs_to_scrape.items():
-            item[k] = xpath_or_css(response, v).strip()
+            item[k] = xpath_or_css(response, v).get().strip()
         item['link'] = response.url
         yield item

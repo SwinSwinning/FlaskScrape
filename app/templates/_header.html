@@ -8,8 +8,12 @@
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('index') }}">Home</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('scrape') }}">Scrape</a>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="scrapeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Scrape</a>
+        <div class="dropdown-menu" aria-labelledby="scrapeDropdown">
+          <a class="dropdown-item" href="{{ url_for('scrape') }}">Playstation Scrape</a>
+          <a class="dropdown-item" href="{{ url_for('scrapegen') }}">General Scrape</a>
+        </div>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('data') }}">Data</a>
@@ -17,9 +21,5 @@
     </ul>
   </div>
 </nav>
-
-
-
-
 
 

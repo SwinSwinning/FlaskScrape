@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/form.html' import render_form, render_field %}
+
+{% block content %}
+<div class="mt-5">
+
+    <div class="row">
+        <h4>General Data - 2</h4>
+        <p>Input your attributes:</p>
+    </div>
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+        <!-- {{ form.hidden_tag() }} -->
+        <br/>    
+        {% for subform in form.attributes %}
+        <div class="row">
+            {% for field in subform %}
+            <div class="col">
+                {{ render_field(field) }}
+    
+            </div>
+            <br/>
+            {% endfor %}
+        <br/>
+        </div>
+        {% endfor %}
+        
+
+        {{ render_field(form.submit) }}    
+    </form>
+
+
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+
+    $(function() {
+      $('a#scrapeGameData').on('click', function(e) {
+        e.preventDefault();
+        var country = $('#sform option:selected').val();        
+        $.getJSON('/start_gen_scrape', 
+        country,                    
+            function(data) {
+          //do nothing
+        });
+        return false;
+      });
+    });
+    
+    
+</script>
+{% endblock %}
+
