@@ -1,92 +1,86 @@
 {% extends 'base.html' %}
-{% from 'bootstrap/form.html' import render_form, render_field %}
+{% from 'bootstrap/form.html' import render_field, render_form %}
+
 
 {% block content %}
-<form method="post" class="col-5">
+<div class="mt-5">
+    
 
-  <div form-group>
-    <label for="start_url">start url</label>
-    {{ form.start_url(class="form-control") }}
-  </div>
+    <div class="row">
+        <h4>General Data</h4>
+        <p>Input your info:</p>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <form method="post" class="form" role="form">
 
-<div form-group>
-  <label for="item_url">item url</label>
-  {{ form.item_url(class="form-control") }} 
+
+                {% for field in form %}
+                        {% if "attr" not in field.name  %}
+                            {% if not field.name.startswith("submit")  %}
+                                {{render_field(field)}}
+                            {% endif %}
+                        {% endif %}
+
+                {% endfor %} 
+                <div form-group>
+                    <label for="num_of_attrs">Number of Attributes to Scrape</label>
+                    {{form.num_of_attrs(class="form-control", onchange="showFields()")}}
+                    
+                </div>
+                <div id="additionalFields">
+                    
+                    <div form-group class="additional-field">
+                        <div class="row mt-2">                           
+                            <div class="col-2">Attribute </div>
+                            <div class="col-5">{{form.attr1_name(class="form-control")}}</div>
+                            <div class="col-5">{{form.attr1_val(class="form-control")}}</div>
+                        </div>
+                    </div>
+                    <div form-group class="additional-field" style="display: none;">
+                      <div class="row mt-2">
+                        <div class="col-2">Attribute </div>
+                        <div class="col-5">{{form.attr2_name(class="form-control")}}</div>
+                        <div class="col-5">{{form.attr2_val(class="form-control")}}</div>
+                      </div>
+                    </div>
+                    <div form-group class="additional-field" style="display: none;">
+                      <div class="row mt-2">
+                        <div class="col-2">Attribute </div>
+                        <div class="col-5">{{form.attr3_name(class="form-control")}}</div>
+                        <div class="col-5">{{form.attr3_val(class="form-control")}}</div>
+                      </div>
+                    </div>
+                    <div form-group class="additional-field" style="display: none;">
+                      <div class="row mt-2">
+                        <div class="col-2">Attribute </div>
+                        <div class="col-5">{{form.attr4_name(class="form-control")}}</div>
+                        <div class="col-5">{{form.attr4_val(class="form-control")}}</div>
+                      </div>
+                    </div>
+                    <div form-group class="additional-field" style="display: none;">
+                      <div class="row mt-2">
+                        <div class="col-2">Attribute </div>
+                        <div class="col-5">{{form.attr5_name(class="form-control")}}</div>
+                        <div class="col-5">{{form.attr5_val(class="form-control")}}</div>
+                      </div>
+                    </div>
+                </div>
+                {{ render_field(form.submit)}}  
+            </form>
+        </div>        
+    </div>
+
+
 </div>
-
-<div form-group>
-  <label for="next_page_url">next_page_url</label>
-  {{ form.next_page_url(class="form-control") }}
-</div>
-
-<div form-group>
-  <label for="num_of_attrs">Number of Attributes to Scrape:</label>
-  {{ form.num_of_attrs(value=1, class="form-control", onchange="showFields()") }}
-
-</div>
-
-<div id="additionalFields">
-  <div form-group class="additional-field">
-  {{form.attr1_name(class="form-control")}}
-  {{form.attr1_val(class="form-control")}}
-  </div>
-
-  <div form-group class="additional-field" style="display: none;">
-    {{form.attr2_name(class="form-control")}}
-    {{form.attr2_val(class="form-control")}}
-  </div>
-  <div form-group class="additional-field" style="display: none;">
-    {{form.attr3_name(class="form-control")}}
-    {{form.attr3_val(class="form-control")}}
-  </div>
-  <div form-group class="additional-field" style="display: none;">
-    {{form.attr4_name(class="form-control")}}
-    {{form.attr4_val(class="form-control")}}
-  </div>
-  <div form-group class="additional-field" style="display: none;">
-    {{form.attr5_name(class="form-control")}}
-    {{form.attr5_val(class="form-control")}}
-  </div>
-</div>
-
-
-
-{{ render_field(form.submit)}}  
-{{ form.submit}}
-
-
-</form>
-
-
-
-  <br>
-  </div>
 
 
 {% endblock %}
 
 
-
-
-
-  {% block scripts %}
+{% block scripts %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-<script type=text/javascript>
-    $(function() {
-      $('a#scrapeGameData').on('click', function(e) {
-        e.preventDefault();
-        var country = $('#sform option:selected').val();        
-        $.getJSON('/run_scrape', 
-        country,                    
-            function(data) {
-          //do nothing
-        });
-        return false;
-      });
-    });   
-    
-</script>
 <script>
   function showFields() {
     var numberSelect = document.getElementById("num_of_attrs");

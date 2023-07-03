@@ -1,8 +1,7 @@
 import scrapy
-from scrapy import signals
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
-from urllib.parse import urlsplit, urlunsplit, urljoin
+from urllib.parse import urljoin
 import json
 
 from scraper.ScraperHelper import xpath_or_css, get_base_url, is_xpath
@@ -177,11 +176,14 @@ class GeneralScraper(scrapy.Spider):
         super(GeneralScraper, self).__init__(*args, **kwargs)
         self.start_url = self.scrape_settings["start_url"]
         self.base_url = get_base_url(self.start_url)
-        # self.link_type = self.scrape_settings["link_type"]
+
+        self.next_page_url = self.scrape_settings["next_page_url"]
+        self.multiple_pages = bool(self.next_page_url)
+
         self.item_selector = self.scrape_settings['item_css']
-        self.contain_item_links = self.scrape_settings['item_links']
-        self.multiple_pages = self.scrape_settings['multiple_pages']
-        self.scrape_json = self.scrape_settings['scrape_json']
+        # self.contain_item_links = self.scrape_settings['item_links']
+        
+        # self.scrape_json = self.scrape_settings['scrape_json']
         self.attrs_to_scrape = self.scrape_settings['attributes']
         self.pages_scraped = 0
 
@@ -190,7 +192,9 @@ class GeneralScraper(scrapy.Spider):
          yield scrapy.Request(f'{self.start_url}')
 
 
-    def parse(self, response):        
+    def parse(self, response):  
+        selected_html =  xpath_or_css(response, self.item_selector).get()    
+        
         # This part handles the pagination and crawling through all the pages:
         if self.multiple_pages:
             if self.pages_scraped < 2:
@@ -206,7 +210,7 @@ class GeneralScraper(scrapy.Spider):
                 yield scrapy.Request(combined)
 
         # This part handles the crawling of the individual items and if needed extract data from itempages.
-        if self.contain_item_links:
+        if selected_html.startswith("<a"):  # Check if the selected html retrieved from the article is a link 'a' element
             print("Item Links-------------------------------------------------------------------------")
             # if site has item links that need to be accessed, create LinkExtractor Object to help extract item links.
             # ...determine whether the item selector is xpath or css.
@@ -226,20 +230,18 @@ class GeneralScraper(scrapy.Spider):
             print("No throughlinking -------------------------------------------------------------------------")
             
             rows = xpath_or_css(response, self.item_selector)  
-            rows1 = response.xpath(self.item_selector)
 
             if len(rows) > 0:             
-                for row in rows:
-                    print(row)
+                for row in rows:                  
                     item = {}
                     for k, v in self.attrs_to_scrape.items():
                         print(k, v)                   
-                        item[k] = xpath_or_css(row, v, "text").get().strip()
+                        item[k] = xpath_or_css(row, v[0], v[1]).get().strip()
                     yield item
 
 
     def parse_page2(self, response, item):
         for k,v in self.attrs_to_scrape.items():
-            item[k] = xpath_or_css(response, v).get().strip()
+            item[k] = xpath_or_css(response, v[0], v[1]).get().strip()
         item['link'] = response.url
         yield item

@@ -14,20 +14,22 @@ def is_xpath(selector):
     return False
 
 
-def xpath_or_css(response, selector, add='text'):
-    attr_name_to_scrape = add
+def xpath_or_css(response, selector, add=None):
+
+    attr_name_to_scrape = 'text' if add == '' else add
     if is_xpath(selector):
         if attr_name_to_scrape == 'text':
             selector += '/text()[normalize-space()]'       
         elif attr_name_to_scrape:
-            selector += f'/@{attr_name_to_scrape}'
-        # Add a '.' in front of the xpath selector, otherwise the iteration will only return the first iter
+            selector += f'/@{attr_name_to_scrape}'      
+
+        # Add a '.' in front of the xpath selector, otherwise the iteration will only return the first iter        
         return response.xpath(f'.{selector}')
     else:
         if attr_name_to_scrape == "text":
             selector += '::text'
-        else:
+        elif attr_name_to_scrape:
             selector += f'::attr({attr_name_to_scrape})'
 
-
+        res = response.css(selector).get()
         return response.css(selector)

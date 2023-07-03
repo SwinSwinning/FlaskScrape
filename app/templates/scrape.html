@@ -2,64 +2,58 @@
 
 
 {% block content %}
-<div class="mt-5">
-
-    <div class="row">
-        <h4>Game Data</h4>
-        <p>Choose Playstation Store Country to Scrape below:</p>
-    </div>
+<div class="container">
     <div class="row">
         <div class="col-6">
-            <select class="form-select" id="sform" aria-label="Default select example">              
-
-                      {% for option in country_options %}
-                      
-                      <option value='{{ option["code"] }}'>{{ option["country"] }}</option>
-                    
-                      {% endfor %}                 
-            </select>
+            <h4>General Scraper</h4>
+            <p>Scrape any website.</p>
         </div>
-        <div class="col-6">
-            <a href="#" id=scrapeGameData><button type="button" class="btn btn-primary" >Scrape Game Data</button></a> 
+        <div class="col-6 d-flex align-items-center">            
+            <a href="{{ url_for('scrapegen') }}"><button type="submit" class="btn btn-primary" >Go To Form</button></a>
+        </div>
+    </div>
+    <div id="psnscrapediv" class="mb-3">
+        <div class="row">
+            <h4>Playstation Store Game Data</h4>
+            <p>Choose Playstation Store Country to Scrape below:</p>
+            <form action="/run_scrape" method="post">
+                <div class="row">
+                    <div class="col-6">            
+                        <select class="form-select" id="sform" name="sform" aria-label="Default select example">             
+        
+                                {% for option in country_options %}                    
+                                <option value='{{ option["code"] }}'>{{ option["country"] }}</option>                    
+                                {% endfor %}                 
+                        </select>     
+                    </div>
+                    <div class="col-6 d-flex align-items-center">            
+                        <button type="submit" class="btn btn-primary" >Scrape Game Data</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="countryscrapediv">
+        <div class="row">
+            <h4>Countries</h4>
+            <div class="col-6">            
+                <p>Scrape the countries for which there are PSN stores</p>
+            </div>
+            <div class="col-6 d-flex align-items-center">
+                <a href="{{ url_for('scrape_countries') }}" id=scrapeCountries><button type="button" class="btn btn-primary" >Scrape Countries</button></a> 
+            </div>
         </div>
     </div>
 </div>
-<div class="mt-5">
-    <div class="row">
-        <h4>Countries</h4>
-    </div>
-    <div class="row">
-        <div class="col-6">
-         
-            <p>Scrape the countries for which there are PSN stores</p>
-        </div>
-        <div class="col-6">
-            <a href="{{ url_for('scrape_countries') }}" id=scrapeCountries><button type="button" class="btn btn-primary" >Scrape Countries</button></a> 
-        </div>
-    </div>
-</div>
+
+
+
 
 
 {% endblock %}
 
 {% block scripts %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type=text/javascript>
 
-
-    $(function() {
-      $('a#scrapeGameData').on('click', function(e) {
-        e.preventDefault();
-        var country = $('#sform option:selected').val();        
-        $.getJSON('/run_scrape', 
-        country,                    
-            function(data) {
-          //do nothing
-        });
-        return false;
-      });
-    });
-    
-    
-</script>
 {% endblock %}   
