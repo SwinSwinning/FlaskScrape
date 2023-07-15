@@ -1,6 +1,7 @@
 import json
+from pathlib import Path
 from app import app
-from app.tasks import run_scrape, run_countries_scrape, get_country_list, PSNscrape, testscrape
+from app.tasks import run_countries_scrape, get_country_list, PSNscrape, testscrape
 from ftplib import FTP
 import creds
 
@@ -20,7 +21,7 @@ def upload_json_to_ftp():
 
     results= [] 
     # Load the countries.json file to get all the country codes. 
-    with open('.\\datafolder\\countries.json') as json_file:
+    with open(Path('./datafolder/countries.json')) as json_file:
         country_data = json.load(json_file)
     country_codes = [item["code"] for item in country_data]
 
@@ -32,7 +33,7 @@ def upload_json_to_ftp():
 
     # upload the countries.json file.
     try:
-        local_file_path = os.path.join(os.getcwd(), f'.\\datafolder\\countries.json')
+        local_file_path =  Path('./datafolder/countries.json')
         with open(local_file_path, 'rb') as f:
             # Get the filename from the local file and upload it to FTP server
             filename = os.path.basename(local_file_path)
@@ -45,7 +46,7 @@ def upload_json_to_ftp():
     # Upload the individual gamelists per country.
     for c in country_codes:
         try:
-            local_file_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{c}.json')
+            local_file_path =  Path(f'./datafolder/psngames-{c}.json')
             with open(local_file_path, 'rb') as f:
                 # Get the filename from the local file and upload it to FTP server
                 filename = os.path.basename(local_file_path)
@@ -60,13 +61,13 @@ def upload_json_to_ftp():
 @app.route('/download', methods = ['POST', 'GET'])
 def download_json():
     country_shortcode = request.form.get('selected_value')
-    file_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{country_shortcode}.json')
+    file_path = os.path.join(os.getcwd(), Path(f'./datafolder/psngames-{country_shortcode}.json'))
     return send_file(file_path, as_attachment=True)
 
 @app.route('/json', methods = ['POST', 'GET'])
 def get_json_data():
     country_shortcode = request.form.get('display_selected')
-    json_path = os.path.join(os.getcwd(), f'.\\datafolder\\psngames-{country_shortcode}.json')
+    json_path = Path(f'./datafolder/psngames-{country_shortcode}.json')
     with open(json_path, 'r') as json_file:
         data = json.load(json_file)
     return jsonify(data)
@@ -74,7 +75,9 @@ def get_json_data():
 
 @app.route('/scrape', methods = ['POST', 'GET'])
 def scrape():
-    country_data = get_country_list()           
+    country_data = get_country_list() 
+    if len(country_data) == 1:
+        flash("No Country information found. Scrape the Countries first.", "error")           
     return render_template('scrape.html', country_options=country_data)
 
 @app.route('/general', methods = ['POST', 'GET'])
@@ -119,7 +122,7 @@ def scrape_countries():
 def startscrape():
     if request.method == 'POST':
         country_shortcode =request.form.get("sform")
-        run_scrape(country_shortcode)
+        PSNscrape(country_shortcode)
         flash(f"Scraping PSN data for {country_shortcode} now")
     return redirect(url_for("scrape"))
    
