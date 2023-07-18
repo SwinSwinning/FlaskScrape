@@ -70,22 +70,34 @@ def general_scrape(scr_settings):
     settings['ITEM_PIPELINES'] = {
         
     }       
+
+
     runner = CrawlerRunner(settings=settings)
     runner.crawl(GeneralScraper, scrape_settings=scr_settings)
 
 @run_in_reactor    
-def testscrape():
+async def testscrape():
     print("----------------TEst Scraping Started---------------------")
     configure_logging()
 
-  
-    settings = get_project_settings()  
+    settings = get_project_settings()   
 
     settings['USER_AGENT'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     settings['FEEDS'] = {Path(f'./datafolder/test-download.json'): {'format': 'json', 'overwrite': 'true'}}
     settings['ITEM_PIPELINES'] = {
         
     }   
+
+    settings['DOWNLOAD_HANDLERS'] = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+}
+
+    settings['PLAYWRIGHT_LAUNCH_OPTIONS'] = {"headless" : False}
+
+    settings['PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT'] = 50000
+
+    settings['TWISTED_REACTOR'] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
     playstation = {  'start_url': 'https://store.playstation.com/nl-nl/pages/browse/1',
                 'item_links': True,
@@ -136,7 +148,7 @@ def testscrape():
                         }
     
     runner = CrawlerRunner(settings=settings)
-    runner.crawl(GeneralScraper, scrape_settings=books)
+    runner.crawl(GeneralScraper, scrape_settings=xbox)
 
 @run_in_reactor
 def run_countries_scrape():
