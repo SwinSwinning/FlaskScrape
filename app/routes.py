@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from app import app
-from app.tasks import run_countries_scrape, get_country_list, PSNscrape, testscrape
+from app.tasks import run_countries_scrape, get_country_list, PSNscrape, general_scrape, testscrape
 from ftplib import FTP
 import creds
 
@@ -101,7 +101,7 @@ def scrapegen():
                              }
 
     
-        testscrape(settings)
+        general_scrape(settings)
         flash(f"Scraping {settings['start_url']} started.")
         return redirect(url_for("index"))   
     return render_template('gen.html', form=form)
@@ -126,3 +126,7 @@ def startscrape():
         flash(f"Scraping PSN data for {country_shortcode} now")
     return redirect(url_for("scrape"))
    
+@app.route('/test', methods=['GET'])
+def test_scrape():
+    testscrape()
+    return "testScrape"

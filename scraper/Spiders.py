@@ -1,4 +1,5 @@
 import scrapy
+from scrapy_playwright.page import PageMethod
 from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from urllib.parse import urljoin
@@ -76,8 +77,8 @@ class PSNCountryScraper(scrapy.Spider):
         # This part handles the pagination and crawling through all the pages:
         if self.multiple_pages:
             print("multiple pages-------------------------------------------------------------------------")
-            selector = self.scrape_settings["next_page_url"]
-            selector += f'::{self.scrape_settings["next_page_url_add"]}'
+            selector = self.scrape_settings["load_next_items"]
+            selector += f'::{self.scrape_settings["load_next_items_add"]}'
             path = response.css(selector).get()
            
             combined = urljoin(self.base_url, path)
@@ -177,8 +178,8 @@ class GeneralScraper(scrapy.Spider):
         self.start_url = self.scrape_settings["start_url"]
         self.base_url = get_base_url(self.start_url)
 
-        self.next_page_url = self.scrape_settings["next_page_url"]
-        self.multiple_pages = bool(self.next_page_url)
+        self.load_next_items = self.scrape_settings["load_next_items"]
+        self.multiple_pages = bool(self.load_next_items)
 
         self.item_selector = self.scrape_settings['item_css']
         # self.contain_item_links = self.scrape_settings['item_links']
@@ -187,57 +188,80 @@ class GeneralScraper(scrapy.Spider):
         self.attrs_to_scrape = self.scrape_settings['attributes']
         self.pages_scraped = 0
 
+        self.use_playwright = self.scrape_settings["LoadJS"]
+
 
     def start_requests(self):
-         yield scrapy.Request(f'{self.start_url}')
+
+        if self.use_playwright:
+            yield scrapy.Request(url=f'{self.start_url}',
+                                 meta={
+                                     "playwright":True,
+                                     "playwright_page_methods":[
+                                         PageMethod("wait_for_selector", self.item_selector+f":nth-child(1)")
+                                     ],
+                                     "playwright_include_page":True
+                                 })
+        else:
+            yield scrapy.Request(url=f'{self.start_url}')
 
 
-    def parse(self, response):  
-        selected_html =  xpath_or_css(response, self.item_selector).get()    
-        
+    async def parse(self, response):  
+        selected_html =  xpath_or_css(response, self.item_selector).get() 
+        if self.use_playwright:
+            page = response.meta["playwright_page"]
+            print (f"document.querySelector({self.load_next_items}).click()")
+            for i in range(2,4):
+                await page.evaluate(f"document.querySelector({self.load_next_items}).click()")
+                
+        else:       
         # This part handles the pagination and crawling through all the pages:
-        if self.multiple_pages:
-            if self.pages_scraped < 2:
-                print("multiple pages-------------------------------------------------------------------------")
-                # selector = self.scrape_settings["next_page_url"]
-                # selector += f'::attr({self.scrape_settings["next_page_url_add"]})'
-                path = xpath_or_css(response, 
-                                    self.scrape_settings["next_page_url"], 
-                                    self.scrape_settings["next_page_url_add"] ).get()
-            
-                combined = urljoin(self.base_url, path)
-                self.pages_scraped = self.pages_scraped+1 
-                yield scrapy.Request(combined)
+            if self.multiple_pages:
+                if self.pages_scraped < 2:
+                    print("multiple pages-------------------------------------------------------------------------")
+                    path = xpath_or_css(response, 
+                                        self.scrape_settings["load_next_items"], 
+                                        self.scrape_settings["load_next_items_add"] ).get()            
+                    combined = urljoin(self.base_url, path)
 
-        # This part handles the crawling of the individual items and if needed extract data from itempages.
-        if selected_html.startswith("<a"):  # Check if the selected html retrieved from the article is a link 'a' element
-            print("Item Links-------------------------------------------------------------------------")
-            # if site has item links that need to be accessed, create LinkExtractor Object to help extract item links.
-            # ...determine whether the item selector is xpath or css.
-            if is_xpath(self.item_selector):
-                link_extractor =  LinkExtractor(restrict_xpaths=self.item_selector)
-            else:
-                link_extractor =  LinkExtractor(restrict_css=self.item_selector)
+                    # if is_xpath(self.scrape_settings["load_next_items"]):
+                    #     link_extractor =  LinkExtractor(restrict_xpaths=self.scrape_settings["load_next_items"])
+                    # else:
+                    #     link_extractor =  LinkExtractor(restrict_css=self.scrape_settings["load_next_items"])
 
-            for item_link in link_extractor.extract_links(response):  #..create requests for each item link found on page.
-                item = {}
-                request = Request(item_link.url,
-                                  callback=self.parse_page2,
-                                  cb_kwargs={ 'item': item })
-                yield request
-        
-        else:  # If data to scrape is found on the same page...
-            print("No throughlinking -------------------------------------------------------------------------")
-            
-            rows = xpath_or_css(response, self.item_selector)  
+                    self.pages_scraped = self.pages_scraped+1 
+                    yield scrapy.Request(combined)
+                    # yield scrapy.Request(link_extractor.extract_links(response))
 
-            if len(rows) > 0:             
-                for row in rows:                  
+            # This part handles the crawling of the individual items and if needed extract data from itempages.
+            if selected_html.startswith("<a"):  # Check if the selected html retrieved from the article is a link 'a' element
+                print("Item Links-------------------------------------------------------------------------")
+                # if site has item links that need to be accessed, create LinkExtractor Object to help extract item links.
+                # ...determine whether the item selector is xpath or css.
+                if is_xpath(self.item_selector):
+                    link_extractor =  LinkExtractor(restrict_xpaths=self.item_selector)
+                else:
+                    link_extractor =  LinkExtractor(restrict_css=self.item_selector)
+
+                for item_link in link_extractor.extract_links(response):  #..create requests for each item link found on page.
                     item = {}
-                    for k, v in self.attrs_to_scrape.items():
-                        print(k, v)                   
-                        item[k] = xpath_or_css(row, v[0], v[1]).get().strip()
-                    yield item
+                    request = Request(item_link.url,
+                                    callback=self.parse_page2,
+                                    cb_kwargs={ 'item': item })
+                    yield request
+            
+            else:  # If data to scrape is found on the same page...
+                print("No throughlinking -------------------------------------------------------------------------")
+                
+                rows = xpath_or_css(response, self.item_selector)  
+
+                if len(rows) > 0:             
+                    for row in rows:                  
+                        item = {}
+                        for k, v in self.attrs_to_scrape.items():
+                            print(k, v)                   
+                            item[k] = xpath_or_css(row, v[0], v[1]).get().strip()
+                        yield item
 
 
     def parse_page2(self, response, item):

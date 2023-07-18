@@ -1,5 +1,7 @@
 from urllib.parse import urlsplit, urlunsplit
 
+
+
 def get_base_url(url, urltype='std'):
     split_url = urlsplit(url)
     if urltype == 'std':
@@ -15,7 +17,6 @@ def is_xpath(selector):
 
 
 def xpath_or_css(response, selector, add=None):
-
     attr_name_to_scrape = 'text' if add == '' else add
     if is_xpath(selector):
         if attr_name_to_scrape == 'text':

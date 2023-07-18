@@ -4,7 +4,7 @@ from pathlib import Path
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 
-from scraper.PSNScraper import PSNScraper, PSNCountryScraper, GeneralScraper
+from scraper.Spiders import PSNScraper, PSNCountryScraper, GeneralScraper
 import json
 import os
 from crochet import run_in_reactor, setup
@@ -43,8 +43,8 @@ def PSNscrape(country_shortcode):
     scr_settings = {  'start_url': f'https://store.playstation.com/{country_shortcode}/pages/browse/1',
                 'item_links': True,
                 'item_css': '//a[@class="psw-link psw-content-link"]',
-                'next_page_url': '//button[@data-qa="ems-sdk-grid#ems-sdk-top-paginator-root#next"]',
-                'next_page_url_add': 'value',
+                'load_next_items': '//button[@data-qa="ems-sdk-grid#ems-sdk-top-paginator-root#next"]',
+                'load_next_items_add': 'value',
                 'multiple_pages': True,
                 'scrape_json': False,
                 'attributes':{
@@ -59,7 +59,7 @@ def PSNscrape(country_shortcode):
 
 
 @run_in_reactor    
-def testscrape(scr_settings):
+def general_scrape(scr_settings):
     print("----------------Scraping Started---------------------")
     configure_logging()
 
@@ -69,13 +69,28 @@ def testscrape(scr_settings):
     settings['FEEDS'] = {Path(f'./datafolder/download.json'): {'format': 'json', 'overwrite': 'true'}}
     settings['ITEM_PIPELINES'] = {
         
+    }       
+    runner = CrawlerRunner(settings=settings)
+    runner.crawl(GeneralScraper, scrape_settings=scr_settings)
+
+@run_in_reactor    
+def testscrape():
+    print("----------------TEst Scraping Started---------------------")
+    configure_logging()
+
+    settings = get_project_settings()   
+
+    settings['USER_AGENT'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    settings['FEEDS'] = {Path(f'./datafolder/test-download.json'): {'format': 'json', 'overwrite': 'true'}}
+    settings['ITEM_PIPELINES'] = {
+        
     }   
 
     playstation = {  'start_url': 'https://store.playstation.com/nl-nl/pages/browse/1',
                 'item_links': True,
                 'item_css': '//a[@class="psw-link psw-content-link"]',
-                'next_page_url': '//button[@data-qa="ems-sdk-grid#ems-sdk-top-paginator-root#next"]',
-                'next_page_url_add': 'value',
+                'load_next_items': '//button[@data-qa="ems-sdk-grid#ems-sdk-top-paginator-root#next"]',
+                'load_next_items_add': 'value',
                 'multiple_pages': True,
                 'scrape_json': False,
                 'attributes':{'title': 'h1.psw-m-b-5',
@@ -87,8 +102,8 @@ def testscrape(scr_settings):
                 'item_css': '//tr[@class="team"]',
                 'scrape_json': False,
                 'multiple_pages': True,
-                'next_page_url': '//a[contains(@aria-label, "Next")]',
-                'next_page_url_add': 'href',
+                'load_next_items': '//a[contains(@aria-label, "Next")]',
+                'load_next_items_add': 'href',
                 'attributes': {'name': '//td[@class="name"]',
                                     'year': '//td[@class="year"]',
                                     'wins': '//td[@class="wins"]',
@@ -100,16 +115,27 @@ def testscrape(scr_settings):
                         'item_css': 'div[class=image_container] > a',
                         'scrape_json': False,
                         'multiple_pages': True,
-                        'next_page_url': 'li[class=next] > a',
-                        'next_page_url_add': 'href',
-                        'attributes': {'title': '//h1',
-                                            'price': '//div[@class="col-sm-6 product_main"]/p[@class="price_color"]'}
+                        'load_next_items': 'li[class=next] > a',
+                        'load_next_items_add': 'href',
+                        'LoadJS': False,
+                        'attributes': {'title': ['//h1',''],
+                                            'price': ['//div[@class="col-sm-6 product_main"]/p[@class="price_color"]','']}
                         }
 
+    xbox = {          'start_url': 'https://www.xbox.com/en-GB/games/all-games/console',
+                        'item_links' : False,
+                        'item_css': 'div[class="ProductCard-module__cardWrapper___6Ls86 shadow"] > a',
+                        'scrape_json': False,
+                        'multiple_pages': True,
+                        'load_next_items': '[aria-label="Load more"]',
+                        'load_next_items_add': 'href',
+                        'LoadJS': True,
+                        'attributes': {'info': ['div[class="ProductCard-module__infoBox___M5x18"]',''],
+                                           }
+                        }
     
     runner = CrawlerRunner(settings=settings)
-    runner.crawl(GeneralScraper, scrape_settings=scr_settings)
-
+    runner.crawl(GeneralScraper, scrape_settings=xbox)
 
 @run_in_reactor
 def run_countries_scrape():
@@ -123,8 +149,8 @@ def run_countries_scrape():
                      'item_css': '//script[contains(@id,"env")]',
                      'scrape_json': True,
                      'multiple_pages': False,
-                     'next_page_url': '',
-                     'next_page_url_add': '',
+                     'load_next_items': '',
+                     'load_next_items_add': '',
                      'attributes_dict': {
                                          'link': '.psw-link.psw-content-link.psw-l-anchor.psw-interactive-root::attr(href)'
                                          }
