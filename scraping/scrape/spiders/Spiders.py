@@ -5,7 +5,7 @@ from scrapy.linkextractors import LinkExtractor
 from urllib.parse import urljoin
 import json
 
-from scraper.ScraperHelper import xpath_or_css, get_base_url, is_xpath
+from scraping.scrape.ScraperHelper import xpath_or_css, get_base_url, is_xpath
 
 
 class PSNScraper(scrapy.Spider):

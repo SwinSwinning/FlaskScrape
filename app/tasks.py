@@ -4,7 +4,7 @@ from pathlib import Path
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 
-from scraper.Spiders import PSNScraper, PSNCountryScraper, GeneralScraper
+from scraping.scrape.spiders.Spiders import PSNScraper, PSNCountryScraper, GeneralScraper
 import json
 import os
 from crochet import run_in_reactor, setup
@@ -78,7 +78,8 @@ def testscrape():
     print("----------------TEst Scraping Started---------------------")
     configure_logging()
 
-    settings = get_project_settings()   
+  
+    settings = get_project_settings()  
 
     settings['USER_AGENT'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     settings['FEEDS'] = {Path(f'./datafolder/test-download.json'): {'format': 'json', 'overwrite': 'true'}}
@@ -135,7 +136,7 @@ def testscrape():
                         }
     
     runner = CrawlerRunner(settings=settings)
-    runner.crawl(GeneralScraper, scrape_settings=xbox)
+    runner.crawl(GeneralScraper, scrape_settings=books)
 
 @run_in_reactor
 def run_countries_scrape():
