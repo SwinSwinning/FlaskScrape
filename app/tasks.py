@@ -74,9 +74,9 @@ def general_scrape(scr_settings):
 
     runner = CrawlerRunner(settings=settings)
     runner.crawl(GeneralScraper, scrape_settings=scr_settings)
-
-@run_in_reactor    
-async def testscrape():
+ 
+@run_in_reactor   
+def testscrape():
     print("----------------TEst Scraping Started---------------------")
     configure_logging()
 
@@ -88,16 +88,17 @@ async def testscrape():
         
     }   
 
+    settings['TWISTED_REACTOR'] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
     settings['DOWNLOAD_HANDLERS'] = {
     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
 
-    settings['PLAYWRIGHT_LAUNCH_OPTIONS'] = {"headless" : False}
+#     settings['PLAYWRIGHT_LAUNCH_OPTIONS'] = {"headless" : False}
 
-    settings['PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT'] = 50000
+#     settings['PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT'] = 50000
 
-    settings['TWISTED_REACTOR'] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+   
 
     playstation = {  'start_url': 'https://store.playstation.com/nl-nl/pages/browse/1',
                 'item_links': True,
