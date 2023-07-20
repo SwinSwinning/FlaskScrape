@@ -7,14 +7,12 @@ from scrapy.utils.project import get_project_settings
 from scraping.scrape.spiders.Spiders import PSNScraper, PSNCountryScraper, GeneralScraper
 import json
 import os
-from crochet import run_in_reactor, setup
 
-# from scrapy.signalmanager import dispatcher
-from scrapy import signals
+# from crochet import run_in_reactor, setup
+
+# setup()
 
 
-
-setup()
 
 def get_country_list():
     try:        
@@ -27,7 +25,7 @@ def get_country_list():
     return data
     
 
-@run_in_reactor    
+
 def PSNscrape(country_shortcode):
     print("----------------Scraping Started---------------------")
     configure_logging()
@@ -58,7 +56,7 @@ def PSNscrape(country_shortcode):
     runner.crawl(GeneralScraper, scrape_settings=scr_settings)
 
 
-@run_in_reactor    
+  
 def general_scrape(scr_settings):
     print("----------------Scraping Started---------------------")
     configure_logging()
@@ -75,7 +73,7 @@ def general_scrape(scr_settings):
     runner = CrawlerRunner(settings=settings)
     runner.crawl(GeneralScraper, scrape_settings=scr_settings)
  
-@run_in_reactor   
+
 def testscrape():
     print("----------------TEst Scraping Started---------------------")
     configure_logging()
@@ -88,11 +86,11 @@ def testscrape():
         
     }   
 
-    settings['TWISTED_REACTOR'] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-    settings['DOWNLOAD_HANDLERS'] = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-}
+#     settings['TWISTED_REACTOR'] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+#     settings['DOWNLOAD_HANDLERS'] = {
+#     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+#     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+# }
 
 #     settings['PLAYWRIGHT_LAUNCH_OPTIONS'] = {"headless" : False}
 
@@ -151,7 +149,7 @@ def testscrape():
     runner = CrawlerRunner(settings=settings)
     runner.crawl(GeneralScraper, scrape_settings=xbox)
 
-@run_in_reactor
+
 def run_countries_scrape():
     print("----------------Scraping countries Started---------------------")
     configure_logging()
