@@ -11,7 +11,7 @@ from crochet import run_in_reactor, setup
 
 # from scrapy.signalmanager import dispatcher
 from scrapy import signals
-    
+
 
 
 setup()
